@@ -37,6 +37,7 @@ def main():
     response = client.chat.completions.create(
         model="openrouter/free",
         messages=messages,
+        temperature=0,
         tools=available_functions
     )
 
