@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from functions.call_function import available_functions
+from functions.call_function import available_functions, call_function
 from prompts import system_prompt
 
 load_dotenv()
@@ -54,6 +54,13 @@ def main():
         for tool_call in message.tool_calls:
             function_args = json.loads(tool_call.function.arguments or "{}")
             print(f"Calling function: {tool_call.function.name}({function_args})")
+            function_result = call_function(tool_call, verbose=args.verbose)
+
+            if not function_result["content"]:
+                raise Exception("The returned tool message had an empty content")
+            if args.verbose:
+                print(f"-> {function_result['content']}")
+
     else:
         print(message.content)
 
