@@ -1,6 +1,8 @@
 import argparse
 import json
 import os
+import sys
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -34,35 +36,49 @@ def main():
         }
     ]
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        temperature=0,
-        tools=available_functions
-    )
+    for i in range(20):
+        if args.verbose:
+            print(f"Loop #{i+1}")
 
-    if not response.usage:
-        raise RuntimeError("The API request flopped")
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=messages,
+            temperature=0,
+            tools=available_functions
+        )
 
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}")
-        print("Prompt tokens:", response.usage.prompt_tokens)
-        print("Response tokens:", response.usage.completion_tokens)
+        if not response.usage:
+            raise RuntimeError("The API request flopped")
 
-    message = response.choices[0].message
-    if message.tool_calls:
-        for tool_call in message.tool_calls:
-            function_args = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
-            function_result = call_function(tool_call, verbose=args.verbose)
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}")
+            print("Prompt tokens:", response.usage.prompt_tokens)
+            print("Response tokens:", response.usage.completion_tokens)
 
-            if not function_result["content"]:
-                raise Exception("The returned tool message had an empty content")
-            if args.verbose:
-                print(f"-> {function_result['content']}")
+        message = response.choices[0].message
+        messages.append(message)
 
-    else:
-        print(message.content)
+        if message.tool_calls:
+            for tool_call in message.tool_calls:
+                function_args = json.loads(tool_call.function.arguments or "{}")
+                print(f"Calling function: {tool_call.function.name}({function_args})")
+                function_result = call_function(tool_call, verbose=args.verbose)
+                result_message = {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": function_result["content"]
+                }
+                messages.append(result_message)
+
+                if not function_result["content"]:
+                    raise Exception("The returned tool message had an empty content")
+                if args.verbose:
+                    print(f"-> {function_result['content']}")
+        else:
+            print(message.content)
+            return 0
+    print("Exiting: Maximum agent iterations reached")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
