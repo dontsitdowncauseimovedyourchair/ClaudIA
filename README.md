@@ -8,6 +8,10 @@ It's powered by a master system prompt and the handful of functions that I hand-
 
 It is made with security in mind so it can only work in an assigned directory by having its function calls injected with the right working directory.
 
-Special thanks to [Boot.dev](https://www.boot.dev/) for the wisdom bestowed upon me for bringing this project to life.
+## FAQ
+**Q: Claude Code and Codex killer??**\
+<small>A: no</small>
+
+Special thanks to [Boot.dev](https://www.boot.dev/) for the wisdom bestowed upon me for bringing this project to life. I was left flabbergasted with this knowledge.
 
 <small>Since I'm a learner I will disclaim no AI was used in the making of this project. The result of this project is the AI itself.<small>
